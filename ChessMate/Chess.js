@@ -1,3 +1,5 @@
+// Embedding library code directly in a tab for convenience...
+
 'use strict';
 /*
  * Copyright (c) 2014, Jeff Hlywa (jhlywa@gmail.com)

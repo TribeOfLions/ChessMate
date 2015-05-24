@@ -44,11 +44,12 @@ var gameData = (function(){
   // play a single move - AKA 'ply'
   // TODO: could change function name to reflect proper terminology...
   var playMove = function() {
+    var gameIncomplete = true;
     if(currentMoveIndex < allMovesLength) {
     var currentMove = allMoves[currentMoveIndex];
     chess.move(currentMove.san);
     if(board) {
-      board.updatePosition(currentMove);
+      board._updatePosition(currentMove);
     }
     else {
      console.error("no board Object set"); 
@@ -56,6 +57,10 @@ var gameData = (function(){
     
     currentMoveIndex ++; 
     }
+    else {
+      gameIncomplete = false;
+    }
+    return gameIncomplete;
   },
   
   // will play all moves remaining for the current turn
@@ -69,7 +74,7 @@ var gameData = (function(){
   resetBoard = function() {
     console.info("resetting board to default starting position");
     chess.reset();
-    board.resetAllTiles();
+    board._resetAllTiles();
   },
 
   // 'Getters'

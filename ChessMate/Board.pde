@@ -5,20 +5,15 @@
  * @dependencies: class Tile
  */
 
-/*
-//TODO: consider privacy of properties/methods: currently all public :/
- //TODO: if rendering the board; do so to an image; so this can be displayed 
- // independently from any effects...
- */
 class Board {
 
   /*
-  // A straightforward array could be used for convenience but
-   // a HashMap has the advantage of being able to reference a tile
-   // directly by the id used in notation
+  A straightforward array could be used for convenience but
+  a HashMap has the advantage of being able to reference a tile
+  directly by the id used in notation
    */
   HashMap<String, Tile> tiles = new HashMap<String, Tile>(64);
-  float tileSize = width/8;
+  float tileSize;
 
   PGraphics boardImg;
   PGraphics piecesImg;
@@ -31,16 +26,24 @@ class Board {
   Board() {
     this.drawBoard = false;
     this.drawPieces = false;
+    tileSize = width/8;
     init();
   }  
-
+  
+  // overriding tile size may allow for some optimisation
+  Board(float t) {
+    this.drawBoard = false;
+    this.drawPieces = false;
+    this.tileSize = t;
+    init();
+  }
+  
   Board(Boolean drawBoard, Boolean drawPieces, color darkColour, color lightColour) {
 
     this.drawBoard = drawBoard;
     this.drawPieces = drawPieces;
-
+    tileSize = width/8;
     init();
-
     if (drawBoard) {
       this.darkColour = darkColour;
       this.lightColour = lightColour;
@@ -50,7 +53,8 @@ class Board {
     if (drawPieces) {
       piecesImg = createGraphics(width, height, P2D);
       _updatePiecesImage(15);
-    }
+    } 
+    
   }
 
   void init() {
@@ -93,15 +97,15 @@ class Board {
   // PRIVATE methods...
   // though note some are intended to be called by gameData
   
-  // name of following could be made clearer:this assumes moves 
+  // Name of following could be made clearer:this assumes moves 
   // are being played in order (i.e. not in reverse!) 
   void _updatePosition(Object currentMove) {
     /*
-      // Note that a flag may contain *multiple* fields
-     // so straightforward conditions as below may be too simplistic
-     // to handle all cases...
-     //  It may be adequate to catch instances of the complex flags
-     // and just allow fall through to easily handled flags.
+     Note that a flag may contain *multiple* fields
+     so straightforward conditions as below may be too simplistic
+     to handle all cases...
+     It may be adequate to catch instances of the complex flags
+     and just allow fall through to easily handled flags.
      */
     var flag = currentMove.flags;
 
@@ -111,14 +115,17 @@ class Board {
       tiles.get(currentMove.to).setPiece(gameData.getPiece(currentMove.to));
     }
     // en passant
-    // Need to remove the taken pawn as well as implement the move 
     else if (flag == "e") {
+      tiles.get(currentMove.from).removePiece();
+      tiles.get(currentMove.to).setPiece(gameData.getPiece(currentMove.to));
       console.info("en passant");
+      //TODO: need to remove the taken pawn as well as implement the move! 
     }
-
     // promotion
+    //TODO: test!
     else if (flag == "p") {
-      
+      tiles.get(currentMove.from).removePiece();
+      tiles.get(currentMove.to).setPiece(gameData.getPiece(currentMove.to));
     }
     //king side castle
     else if (flag == "k") {
@@ -132,12 +139,25 @@ class Board {
         tiles.get("f8").setPiece(gameData.getPiece("f8"));
       }
     }
-    //TODO: queen side castle!
-
+    //queen side castle
+    //TODO: test!
+    else if (flag == "q") {
+      tiles.get(currentMove.from).removePiece();
+      tiles.get(currentMove.to).setPiece(gameData.getPiece(currentMove.to));
+      if (currentMove["color"] =="w") {
+        tiles.get("a1").removePiece();
+        tiles.get("d1").setPiece(gameData.getPiece("d1"));
+      } else {
+        tiles.get("h1").removePiece();
+        tiles.get("d8").setPiece(gameData.getPiece("d8"));
+      }
+    }
+    
     if (drawPieces) {
      _updatePiecesImage();
     }
   }//end: updatePosition
+
 
   void _resetAllTiles() {
     for (Tile t : tiles.values ()) {
@@ -177,6 +197,7 @@ class Board {
     }
     boardImg.endDraw();
   }
+
 
   // All pieces are drawn to a single layer here
   void _updatePiecesImage() {
@@ -225,7 +246,7 @@ class Board {
     if (drawPieces) {
       image(piecesImg, 0, 0);
     }
-  }//end: render()
+  }
   
 }
 
